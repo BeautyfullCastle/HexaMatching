@@ -3,10 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Renderer))]
 public class Sphere : MonoBehaviour
 {
 	public enum ColorType
 	{
+		NONE,
 		RED,
 		ORANGE,
 		YELLOW,
@@ -14,16 +16,14 @@ public class Sphere : MonoBehaviour
 		BLUE
 	}
 
-	private ColorType colorType;
+	public ColorType Type { get; private set; }
 
-	private void Awake()
+	public void Init(Vector3 localPos, ColorType colorType)
 	{
+		this.Type = colorType;
+
+		this.transform.localPosition = localPos;
 		
-	}
-
-	public void Init(ColorType colorType)
-	{
-		this.colorType = colorType;
 		var mat = this.GetComponent<Renderer>().material;
 		mat.color = GetColorOfType(colorType);
 	}
@@ -42,6 +42,7 @@ public class Sphere : MonoBehaviour
 				return Color.green;
 			case ColorType.BLUE:
 				return Color.blue;
+			case ColorType.NONE:
 			default:
 				return Color.black;
 		}

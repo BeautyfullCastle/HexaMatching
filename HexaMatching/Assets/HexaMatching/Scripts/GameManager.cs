@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField]
+	[SerializeField]
     private GameObject hexagonPref;
     [SerializeField]
     private Transform parentTr;
@@ -13,6 +13,8 @@ public class GameManager : MonoBehaviour
 	private GameObject spherePref;
 	[SerializeField]
 	private Transform sphereParentTr;
+
+	private const int RADIUS = 3;
 
     private void Awake()
 	{
@@ -31,12 +33,65 @@ public class GameManager : MonoBehaviour
 	private void Initialize()
 	{
 		/// map - r : 3
-		var hexes = Hex.CubeSpiral(new Hex(), 3);
-		MakeObjects(hexagonPref, parentTr, hexes);
-		var spheres = MakeObjects(spherePref, sphereParentTr, hexes);
-		spheres.ForEach(
-			(x) => x.GetComponent<Sphere>()
-				.Init((Sphere.ColorType)UnityEngine.Random.Range(0, 5)));
+		var hexes = Hex.CubeSpiral(new Hex(), RADIUS);
+
+		var hexagonsPerCoord = new Dictionary<Hex, Hexagon>();
+		var spheresPerCoord = new Dictionary<Hex, Sphere>();
+
+		foreach (var hex in hexes)
+		{
+			var hexagonObj = Instantiate(hexagonPref, parentTr);
+			var hexagon = hexagonObj.GetComponent<Hexagon>();
+			hexagon.Init(hex.ToVector3());
+			hexagonsPerCoord.Add(hex, hexagon);
+
+			var sphereObj = Instantiate(spherePref, sphereParentTr);
+			var sphere = sphereObj.GetComponent<Sphere>();
+			spheresPerCoord.Add(hex, sphere);
+
+			sphere.Init(hex.ToVector3(), (Sphere.ColorType)UnityEngine.Random.Range(1, 6));
+		}
+
+		CheckMatching(spheresPerCoord);
+	}
+
+	private void CheckMatching(Dictionary<Hex, Sphere> spheresPerCoord)
+	{
+		// TODO : x + y + z = 0
+		for (int i = -RADIUS; i <= RADIUS; i++)
+		{
+			for (int j = -RADIUS; j <= RADIUS; j++)
+			{
+				var prevType = Sphere.ColorType.NONE;
+				var currentType = Sphere.ColorType.RED;
+				int count = 0;
+				for (int k = -RADIUS; k <= RADIUS; k++)
+				{
+					try
+					{
+						var hex = new Hex(i, j, k);
+						if (spheresPerCoord.ContainsKey(hex))
+						{
+							currentType = spheresPerCoord[hex].Type;
+							if (currentType == prevType)
+							{
+								count++;
+							}
+
+							if (count >= 3)
+							{
+								GameObject.Destroy(spheresPerCoord[hex].gameObject);
+							}
+						}
+					}
+					catch(ArgumentException e)
+					{
+
+					}
+					prevType = currentType;
+				}
+			}
+		}
 	}
 
 	private List<GameObject> MakeObjects(GameObject prefab, Transform parent, List<Hex> hexes)
@@ -96,10 +151,5 @@ public class GameManager : MonoBehaviour
 			return hitInfo.transform;
 		}
 		return null;
-	}
-
-	private void OnMouseDrag()
-	{
-
 	}
 }
