@@ -25,15 +25,29 @@ TNT : T또는 L 형태로 매칭 시 발생
 
 
 •	과제 난이도에 비해 짧은 시간이므로 완벽하지 않으셔도 되니 편하게 메일 보내주세요.
+
 •	YouTube 플레이 동영상을 참고 하시거나 모바일에서 플레이 하시면 됩니다.
+
 •	Android 스토어 링크 : https://play.google.com/store/apps/details?id=com.cookapps.toyparty
+
 •	iOS 스토어 링크 : https://itunes.apple.com/app/toy-party-hexa-block-match-3/id1266569652
+
+
 <개발 환경>
+
 •	Unity - Android 환경
+
+
 <제출물>
+
 •	소스코드
+
 •	게임 실행 apk 파일
+
  
 <제출기한>
+
 •	2019년 6월 10일 월요일 오전 10시까지
+
 •	회신할 메일 주소 : recruit@cookapps.com 
+
