@@ -9,7 +9,7 @@ internal struct Tests
 {
     static public void EqualHex(String name, Hex a, Hex b)
     {
-        if (!(a.q == b.q && a.s == b.s && a.r == b.r))
+        if (!(a.x == b.x && a.y == b.y && a.z == b.z))
         {
             Tests.Complain(name);
         }

@@ -15,8 +15,8 @@ internal struct OffsetCoord
 
     static public OffsetCoord QoffsetFromCube(int offset, Hex h)
     {
-        int col = h.q;
-        int row = h.r + (int)((h.q + offset * (h.q & 1)) / 2);
+        int col = h.x;
+        int row = h.z + (int)((h.x + offset * (h.x & 1)) / 2);
         return new OffsetCoord(col, row);
     }
 
@@ -30,8 +30,8 @@ internal struct OffsetCoord
 
     static public OffsetCoord RoffsetFromCube(int offset, Hex h)
     {
-        int col = h.q + (int)((h.r + offset * (h.r & 1)) / 2);
-        int row = h.r;
+        int col = h.x + (int)((h.z + offset * (h.z & 1)) / 2);
+        int row = h.z;
         return new OffsetCoord(col, row);
     }
 

@@ -49,8 +49,8 @@ internal struct FractionalHex
     static public List<Hex> HexLinedraw(Hex a, Hex b)
     {
         int N = a.Distance(b);
-        FractionalHex a_nudge = new FractionalHex(a.q + 0.000001, a.r + 0.000001, a.s - 0.000002);
-        FractionalHex b_nudge = new FractionalHex(b.q + 0.000001, b.r + 0.000001, b.s - 0.000002);
+        FractionalHex a_nudge = new FractionalHex(a.x + 0.000001, a.z + 0.000001, a.y - 0.000002);
+        FractionalHex b_nudge = new FractionalHex(b.x + 0.000001, b.z + 0.000001, b.y - 0.000002);
         List<Hex> results = new List<Hex> { };
         double step = 1.0 / Math.Max(N, 1);
         for (int i = 0; i <= N; i++)

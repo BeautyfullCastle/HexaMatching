@@ -13,8 +13,8 @@ internal struct DoubledCoord
 
     static public DoubledCoord QdoubledFromCube(Hex h)
     {
-        int col = h.q;
-        int row = 2 * h.r + h.q;
+        int col = h.x;
+        int row = 2 * h.z + h.x;
         return new DoubledCoord(col, row);
     }
 
@@ -28,8 +28,8 @@ internal struct DoubledCoord
 
     static public DoubledCoord RdoubledFromCube(Hex h)
     {
-        int col = 2 * h.q + h.r;
-        int row = h.r;
+        int col = 2 * h.x + h.z;
+        int row = h.z;
         return new DoubledCoord(col, row);
     }
 

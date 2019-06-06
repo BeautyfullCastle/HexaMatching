@@ -21,8 +21,8 @@ internal struct Layout
     public Point HexToPixel(Hex h)
     {
         Orientation M = orientation;
-        double x = (M.f0 * h.q + M.f1 * h.r) * size.x;
-        double y = (M.f2 * h.q + M.f3 * h.r) * size.y;
+        double x = (M.f0 * h.x + M.f1 * h.z) * size.x;
+        double y = (M.f2 * h.x + M.f3 * h.z) * size.y;
         return new Point(x + origin.x, y + origin.y);
     }
 

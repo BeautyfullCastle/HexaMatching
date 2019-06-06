@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,117 +9,97 @@ public class GameManager : MonoBehaviour
     private GameObject hexagonPref;
     [SerializeField]
     private Transform parentTr;
-    [SerializeField]
-    private Transform originTr;
-    [SerializeField]
-    private Transform toTr;
-
-    [SerializeField]
-    private Vector3 vec;
-    private Vector3 dir;
-    private float dist;
-
+	[SerializeField]
+	private GameObject spherePref;
+	[SerializeField]
+	private Transform sphereParentTr;
 
     private void Awake()
-    {
-        vec = toTr.localPosition - originTr.localPosition;
-        Debug.Log(vec.magnitude);
-        //vec.z = 0f;
-        dir = vec.normalized;
-        dist = vec.magnitude;
+	{
+		var obj = Instantiate(hexagonPref, parentTr);
+		obj.transform.localPosition = new Vector3();
 
-        var obj = Instantiate(hexagonPref, parentTr);
-        obj.transform.Translate(dir * dist);
+		foreach (var direction in Hex.directions)
+		{
+			obj = Instantiate(hexagonPref, parentTr);
+			obj.transform.localPosition = direction.ToVector3();
+		}
 
-        //obj = Instantiate(hexagonPref, parentTr);
-        //obj.transform.Translate(vec * -1);
+		Initialize();
+	}
 
-        float angle = 45f * Mathf.Deg2Rad;
-        var rotZ = new Matrix4x4()
-        {
-            m00 = Mathf.Cos(angle),
-            m01 = -Mathf.Sin(angle),
-            m10 = Mathf.Sin(angle),
-            m11 = Mathf.Cos(angle),
-            m22 = 1f,
-            m33 = 1f
-        };
-        var rotX = new Matrix4x4()
-        {
-            m00 = 1f,
-            m11 = Mathf.Cos(angle),
-            m12 = -Mathf.Sin(angle),
-            m21 = Mathf.Sin(angle),
-            m22 = Mathf.Cos(angle),
-            m33 = 1f
-        };
-        var rotY = new Matrix4x4()
-        {
-            m00 = Mathf.Cos(angle),
-            m02 = Mathf.Sin(angle),
-            m11 = 1f,
-            m20 = -Mathf.Sin(angle),
-            m22 = Mathf.Cos(angle),
-            m33 = 1f
-        };
-        var rotM = rotX * rotY * rotZ;
-        //dir = rotM.MultiplyPoint(dir);
+	private void Initialize()
+	{
+		/// map - r : 3
+		var hexes = Hex.CubeSpiral(new Hex(), 3);
+		MakeObjects(hexagonPref, parentTr, hexes);
+		var spheres = MakeObjects(spherePref, sphereParentTr, hexes);
+		spheres.ForEach(
+			(x) => x.GetComponent<Sphere>()
+				.Init((Sphere.ColorType)UnityEngine.Random.Range(0, 5)));
+	}
 
-        var transM = new Matrix4x4()
-        {
-            m00 = 1f,
-            m03 = 0.5f,
-            m11 = 1f,
-            m13 = 0.75f,
-            m22 = 1f,
-            m23 = 0f,
-            m33 = 1f
-        };
-        var M = /*transM * */ rotM;
-        var newV = M.MultiplyPoint(dir);
+	private List<GameObject> MakeObjects(GameObject prefab, Transform parent, List<Hex> hexes)
+	{
+		var objs = new List<GameObject>();
+		foreach (var hex in hexes)
+		{
+			var obj = Instantiate(prefab, parent);
+			obj.transform.localPosition = hex.ToVector3();
+			objs.Add(obj);
+		}
 
-        obj = Instantiate(hexagonPref, parentTr);
-        //float d = Mathf.Sqrt((0.5f * 0.5f) + (0.75f * 0.75f));
-        //var v = new Vector3(dir.x * 0.5f, dir * 0.75f);
-        obj.transform.Translate(newV * dist);// * d);
+		return objs;
+	}
 
-        //obj = Instantiate(hexagonPref, parentTr);
-        //obj.transform.Translate(vec * -1);
+	private Transform from;
+	private Transform to;
 
-        dir = rotM.MultiplyVector(dir);
-        newV = M.MultiplyPoint(dir);
-        obj = Instantiate(hexagonPref, parentTr);
-        obj.transform.Translate(newV * dist);
+	private void Update()
+	{
+		if (from == null && Input.GetMouseButtonDown(0))
+		{
+			from = GetHitTransform();
+		}
+		else if (from != null && Input.GetMouseButton(0))
+		{
+			if (from == null)
+			{
+				return;
+			}
+			var hitTr = GetHitTransform();
+			if (hitTr == null || hitTr == from)
+			{
+				return;
+			}
+			to = hitTr;
+			Swap(from, to);
+			from = null;
+			to = null;
+		}
+	}
 
-        //obj = Instantiate(hexagonPref, parentTr);
-        //obj.transform.Translate(vec * -1);
-    }
+	private void Swap(Transform from, Transform to)
+	{
+		Vector3 tempPos = from.localPosition;
+		from.localPosition = to.localPosition;
+		to.localPosition = tempPos;
+	}
 
-    public struct Matrix3x3
-    {
-        public float m00;
-        public float m01;
-        public float m02;
-        public float m10;
-        public float m11;
-        public float m12;
-        public float m20;
-        public float m21;
-        public float m22;
+	private Transform GetHitTransform()
+	{
+		var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		RaycastHit hitInfo;
+		bool isHit = Physics.Raycast(ray, out hitInfo);
+		if (isHit)
+		{
+			return hitInfo.transform;
+		}
+		return null;
+	}
 
-        public Vector3 Rotate(Vector3 vector)
-        {
-            vector.x = vector.x * m00
-                + vector.y * m10
-                + vector.z * m20;
-            vector.y = vector.x * m01
-                + vector.y * m11
-                + vector.z * m21;
-            vector.z = vector.x * m02
-                + vector.y * m12
-                + vector.z * m22;
+	private void OnMouseDrag()
+	{
 
-            return vector;
-        }
-    }
+	}
 }
