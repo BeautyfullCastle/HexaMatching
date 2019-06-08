@@ -6,9 +6,9 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
 	[SerializeField]
-    private GameObject hexagonPref;
-    [SerializeField]
-    private Transform parentTr;
+	private GameObject hexagonPref;
+	[SerializeField]
+	private Transform parentTr;
 	[SerializeField]
 	private GameObject piecePref;
 	[SerializeField]
@@ -50,7 +50,7 @@ public class GameManager : MonoBehaviour
 			var piece = pieceObj.GetComponent<Piece>();
 			piecesPerCoord.Add(hex, piece);
 
-			piece.Init(hex.ToVector3(), (Shape.ColorType)UnityEngine.Random.Range(1, 6));
+			piece.Init(hex.ToVector3(), (Shape.eColorType)UnityEngine.Random.Range(1, 6));
 		}
 
 		CheckMatching(piecesPerCoord);
@@ -58,59 +58,85 @@ public class GameManager : MonoBehaviour
 
 	private void CheckMatching(Dictionary<Hex, Piece> piecesPerCoord)
 	{
-		// TODO : x + y + z = 0
+		// x + y + z = 0
+
+		// y AXIS
+		var piecesToBomb = CheckMatchingPiecesPerAxis(piecesPerCoord, eAXIS.X);
+		piecesToBomb.UnionWith(CheckMatchingPiecesPerAxis(piecesPerCoord, eAXIS.Y));
+		piecesToBomb.UnionWith(CheckMatchingPiecesPerAxis(piecesPerCoord, eAXIS.Z));
+		foreach (var pieceToBomb in piecesToBomb)
+		{
+			Destroy(pieceToBomb.gameObject);
+		}
+	}
+
+	private static HashSet<Piece> CheckMatchingPiecesPerAxis(Dictionary<Hex, Piece> piecesPerCoord, eAXIS axis)
+	{
+		var piecesToBomb = new HashSet<Piece>();
+
 		for (int i = -RADIUS; i <= RADIUS; i++)
 		{
-			var prevType = Shape.ColorType.NONE;
-			var currentType = Shape.ColorType.NONE;
+			var prevType = Shape.eColorType.NONE;
+			var currentType = Shape.eColorType.NONE;
 			int count = 1;
 
-			for (int j = -RADIUS; j <= RADIUS; j++)
+			int jInitValue = (i <= 0) ? -RADIUS - i : -RADIUS;
+			int jUntilValue = (i <= 0) ? RADIUS : RADIUS - i;
+			for (int j = jInitValue; j <= jUntilValue; j++)
 			{
 				int k = -i - j;
-				var hex = new Hex(i, j);
+				var hex = GetHexPerAxis(axis, i, j, k);
 
-				if (piecesPerCoord.ContainsKey(hex))
+				currentType = piecesPerCoord[hex].Type;
+				if (currentType == prevType)
 				{
-					currentType = piecesPerCoord[hex].Type;
-					if (currentType == prevType)
+					count++;
+				}
+				else
+				{
+					count = 1;
+				}
+
+				Debug.LogFormat("{0} : {1}, count : {2}", hex.ToVector3(), currentType, count);
+
+				if (count >= MIN_BOMB_COUNT)
+				{
+					if (count == MIN_BOMB_COUNT + 1)
 					{
-						count++;
+						piecesPerCoord[hex].ChangeShapeTo<Rocket>();
+						count = 1;
 					}
 					else
 					{
-						count = 1;
-					}
-
-					Debug.LogFormat("{0},{1},{2} : {3}, count : {4}", i, j, k, currentType, count);
-
-					if (count >= MIN_BOMB_COUNT)
-					{
-						if (j < RADIUS &&
-							currentType == piecesPerCoord[new Hex(i, j + 1)].Type)
+						for (int jj = j - 2; jj <= j; jj++)
 						{
-							count++;
-							j++;
+							var kk = -i - jj;
+							piecesToBomb.UnionWith(piecesPerCoord[GetHexPerAxis(axis, i,jj,kk)].BombAndReturnPieces());
 						}
-
-						for (int x = j - (count-1); x <= j; x++)
-						{
-							piecesPerCoord[new Hex(i, x)].transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-							//GameObject.Destroy(spheresPerCoord[new Hex(i,x)].gameObject);
-							if(count == 4)
-							{
-								piecesPerCoord[new Hex(i, x)].ChangeShapeTo(Shape.ShapeType.ROCKET);
-							}
-						}
-
-						count = 1;
 					}
-
 				}
 
 				prevType = currentType;
 			}
 		}
+
+		return piecesToBomb;
+	}
+
+	private static Hex GetHexPerAxis(eAXIS axis, int i, int j, int k)
+	{
+		// z aixs
+		var hex = new Hex(i, k, j);
+		if (axis == eAXIS.X)
+		{
+			hex = new Hex(k, i, j);
+		}
+		else if (axis == eAXIS.Y)
+		{
+			hex = new Hex(i, j, k);
+		}
+
+		return hex;
 	}
 
 	private List<GameObject> MakeObjects(GameObject prefab, Transform parent, List<Hex> hexes)

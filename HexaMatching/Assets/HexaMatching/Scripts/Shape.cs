@@ -1,17 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 
 public abstract class Shape : MonoBehaviour
 {
-	public enum ShapeType
-	{
-		NONE = -1,
-		SPHERE = 0,
-		ROCKET = 1
-	}
-
-	public enum ColorType
+	public enum eColorType
 	{
 		NONE,
 		RED,
@@ -23,50 +17,41 @@ public abstract class Shape : MonoBehaviour
 
 	protected Piece piece;
 
-	public ColorType Type { get; protected set; }
+	public eColorType ColorType { get; protected set; }
 
-	public void Init(Piece piece, ColorType type)
+	public void Init(Piece piece, eColorType type)
 	{
 		this.piece = piece;
-		this.Type = type;
+		ChangeColor(type);
 	}
 
-	public Shape Change(ColorType colorType = ColorType.NONE)
+	protected void ChangeColor(eColorType colorType)
 	{
-		Destroy(this.piece.GetComponentInChildren<Shape>().gameObject);
-		var newShape = Instantiate(this, this.piece.transform);
-		newShape.ChangeColor(colorType);
-		return newShape;
-	}
-
-	protected void ChangeColor(ColorType colorType)
-	{
-		if (colorType != ColorType.NONE)
-		{
-			this.Type = colorType;
-		}
+		this.ColorType = colorType;
 
 		var mat = this.piece.GetComponentInChildren<Renderer>().material;
-		mat.color = GetColorOfType(this.Type);
+		mat.color = GetColorOfType(this.ColorType);
 	}
 
-	protected Color GetColorOfType(ColorType colorType)
+	protected Color GetColorOfType(eColorType colorType)
 	{
 		switch (colorType)
 		{
-			case ColorType.RED:
+			case eColorType.RED:
 				return Color.red;
-			case ColorType.ORANGE:
+			case eColorType.ORANGE:
 				return Color.magenta;
-			case ColorType.YELLOW:
+			case eColorType.YELLOW:
 				return Color.yellow;
-			case ColorType.GREEN:
+			case eColorType.GREEN:
 				return Color.green;
-			case ColorType.BLUE:
+			case eColorType.BLUE:
 				return Color.blue;
-			case ColorType.NONE:
+			case eColorType.NONE:
 			default:
 				return Color.black;
 		}
 	}
+
+	public abstract List<Piece> BombAndReturnPieces();
 }
