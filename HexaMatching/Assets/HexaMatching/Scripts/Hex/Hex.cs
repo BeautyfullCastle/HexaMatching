@@ -6,7 +6,7 @@ using UnityEngine;
 
 internal struct Hex
 {
-    public Hex(int x, int z, int y)
+    public Hex(int x, int z, int y) : this()
     {
         this.x = x;
         this.z = z;
@@ -14,7 +14,11 @@ internal struct Hex
         if (x + z + y != 0) throw new ArgumentException("x + z + y must be 0");
     }
 
-    public readonly int x;
+	public Hex(int x, int z) : this(x, z, -x-z)
+	{
+	}
+
+	public readonly int x;
     public readonly int z;
     public readonly int y;
 
@@ -62,7 +66,7 @@ internal struct Hex
 
     static public List<Hex> diagonals = new List<Hex> { new Hex(2, -1, -1), new Hex(1, -2, 1), new Hex(-1, -1, 2), new Hex(-2, 1, 1), new Hex(-1, 2, -1), new Hex(1, 1, -2) };
 
-    public Hex DiagonalNeighbor(int direction)
+	public Hex DiagonalNeighbor(int direction)
     {
         return Add(Hex.diagonals[direction]);
     }

@@ -248,9 +248,9 @@ MonoBehaviour:
   hexagonPref: {fileID: 2998239552602566309, guid: 904c715d860b978469fa241e4a81ffcf,
     type: 3}
   parentTr: {fileID: 741245694}
-  spherePref: {fileID: 6169405847644603746, guid: 10665ef193282ef439c7d95083558a09,
+  piecePref: {fileID: 6169405847644603746, guid: 10665ef193282ef439c7d95083558a09,
     type: 3}
-  sphereParentTr: {fileID: 649414564}
+  pieceParentTr: {fileID: 649414564}
 --- !u!4 &580048038
 Transform:
   m_ObjectHideFlags: 0
@@ -275,7 +275,7 @@ GameObject:
   m_Component:
   - component: {fileID: 649414564}
   m_Layer: 0
-  m_Name: Spheres
+  m_Name: Pieces
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -306,7 +306,7 @@ GameObject:
   m_Component:
   - component: {fileID: 741245694}
   m_Layer: 0
-  m_Name: Cubes
+  m_Name: Hexagons
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -428,7 +428,7 @@ PrefabInstance:
     - target: {fileID: 2998239552602566309, guid: 904c715d860b978469fa241e4a81ffcf,
         type: 3}
       propertyPath: m_Name
-      value: Cube
+      value: Hexagon
       objectReference: {fileID: 0}
     - target: {fileID: 2998239552602566309, guid: 904c715d860b978469fa241e4a81ffcf,
         type: 3}
@@ -502,7 +502,7 @@ PrefabInstance:
     - target: {fileID: 6169405847644603746, guid: 10665ef193282ef439c7d95083558a09,
         type: 3}
       propertyPath: m_Name
-      value: Sphere
+      value: Piece
       objectReference: {fileID: 0}
     - target: {fileID: 6169405847644603746, guid: 10665ef193282ef439c7d95083558a09,
         type: 3}

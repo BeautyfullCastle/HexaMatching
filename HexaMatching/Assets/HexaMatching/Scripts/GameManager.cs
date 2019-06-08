@@ -10,13 +10,14 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private Transform parentTr;
 	[SerializeField]
-	private GameObject spherePref;
+	private GameObject piecePref;
 	[SerializeField]
-	private Transform sphereParentTr;
+	private Transform pieceParentTr;
 
 	private const int RADIUS = 3;
+	private const int MIN_BOMB_COUNT = 3;
 
-    private void Awake()
+	private void Awake()
 	{
 		var obj = Instantiate(hexagonPref, parentTr);
 		obj.transform.localPosition = new Vector3();
@@ -36,7 +37,7 @@ public class GameManager : MonoBehaviour
 		var hexes = Hex.CubeSpiral(new Hex(), RADIUS);
 
 		var hexagonsPerCoord = new Dictionary<Hex, Hexagon>();
-		var spheresPerCoord = new Dictionary<Hex, Sphere>();
+		var piecesPerCoord = new Dictionary<Hex, Piece>();
 
 		foreach (var hex in hexes)
 		{
@@ -45,51 +46,69 @@ public class GameManager : MonoBehaviour
 			hexagon.Init(hex.ToVector3());
 			hexagonsPerCoord.Add(hex, hexagon);
 
-			var sphereObj = Instantiate(spherePref, sphereParentTr);
-			var sphere = sphereObj.GetComponent<Sphere>();
-			spheresPerCoord.Add(hex, sphere);
+			var pieceObj = Instantiate(piecePref, pieceParentTr);
+			var piece = pieceObj.GetComponent<Piece>();
+			piecesPerCoord.Add(hex, piece);
 
-			sphere.Init(hex.ToVector3(), (Sphere.ColorType)UnityEngine.Random.Range(1, 6));
+			piece.Init(hex.ToVector3(), (Shape.ColorType)UnityEngine.Random.Range(1, 6));
 		}
 
-		CheckMatching(spheresPerCoord);
+		CheckMatching(piecesPerCoord);
 	}
 
-	private void CheckMatching(Dictionary<Hex, Sphere> spheresPerCoord)
+	private void CheckMatching(Dictionary<Hex, Piece> piecesPerCoord)
 	{
 		// TODO : x + y + z = 0
 		for (int i = -RADIUS; i <= RADIUS; i++)
 		{
+			var prevType = Shape.ColorType.NONE;
+			var currentType = Shape.ColorType.NONE;
+			int count = 1;
+
 			for (int j = -RADIUS; j <= RADIUS; j++)
 			{
-				var prevType = Sphere.ColorType.NONE;
-				var currentType = Sphere.ColorType.RED;
-				int count = 0;
-				for (int k = -RADIUS; k <= RADIUS; k++)
-				{
-					try
-					{
-						var hex = new Hex(i, j, k);
-						if (spheresPerCoord.ContainsKey(hex))
-						{
-							currentType = spheresPerCoord[hex].Type;
-							if (currentType == prevType)
-							{
-								count++;
-							}
+				int k = -i - j;
+				var hex = new Hex(i, j);
 
-							if (count >= 3)
+				if (piecesPerCoord.ContainsKey(hex))
+				{
+					currentType = piecesPerCoord[hex].Type;
+					if (currentType == prevType)
+					{
+						count++;
+					}
+					else
+					{
+						count = 1;
+					}
+
+					Debug.LogFormat("{0},{1},{2} : {3}, count : {4}", i, j, k, currentType, count);
+
+					if (count >= MIN_BOMB_COUNT)
+					{
+						if (j < RADIUS &&
+							currentType == piecesPerCoord[new Hex(i, j + 1)].Type)
+						{
+							count++;
+							j++;
+						}
+
+						for (int x = j - (count-1); x <= j; x++)
+						{
+							piecesPerCoord[new Hex(i, x)].transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+							//GameObject.Destroy(spheresPerCoord[new Hex(i,x)].gameObject);
+							if(count == 4)
 							{
-								GameObject.Destroy(spheresPerCoord[hex].gameObject);
+								piecesPerCoord[new Hex(i, x)].ChangeShapeTo(Shape.ShapeType.ROCKET);
 							}
 						}
-					}
-					catch(ArgumentException e)
-					{
 
+						count = 1;
 					}
-					prevType = currentType;
+
 				}
+
+				prevType = currentType;
 			}
 		}
 	}
