@@ -1,32 +1,59 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
 	[SerializeField]
 	private GameObject hexagonPref = null;
 	[SerializeField]
-	private Transform parentTr = null;
+	private Transform hexagonParentTr = null;
 	[SerializeField]
 	private GameObject piecePref = null;
 	[SerializeField]
 	private Transform pieceParentTr = null;
+	[SerializeField]
+	private Text explainText = null;
+	[SerializeField]
+	private Text scoreText = null;
 
 	private Dictionary<Hex, Piece> piecesPerCoord = null;
 
 	private Transform from = null;
 	private Transform to = null;
 
+	private int score = 0;
 	private bool isTouchable = false;
+	private bool isInitializing = false;
 
 	private const int RADIUS = 3;
 	private const int MIN_BOMB_COUNT = 3;
 
+	private static YieldInstruction waitYielder = new WaitForSeconds(0.1f);
+
+	private int Score
+	{
+		get
+		{
+			return score;
+		}
+		set
+		{
+			if(isInitializing)
+			{
+				return;
+			}
+			score = value;
+			scoreText.SetText(score.ToString());
+		}
+	}
+
 	private IEnumerator Start()
 	{
+		explainText.SetText("Initializing.");
 		yield return Initialize();
+		explainText.Clear();
 	}
 
 	private void Update()
@@ -75,14 +102,24 @@ public class GameManager : MonoBehaviour
 		to = null;
 
 		yield return Swap(fromPiece, toPiece);
-		yield return CheckMatching();
+
+		if(GetPiecesToBomb().Count <= 0)
+		{
+			yield return Swap(fromPiece, toPiece);
+		}
+		else
+		{
+			yield return CheckMatching();
+		}
 
 		isTouchable = true;
 	}
 
 	private IEnumerator Initialize()
 	{
-		/// map - r : 3
+		isInitializing = true;
+		isTouchable = false;
+
 		var hexes = Hex.CubeSpiral(new Hex(), RADIUS);
 
 		var hexagonsPerCoord = new Dictionary<Hex, Hexagon>();
@@ -90,7 +127,7 @@ public class GameManager : MonoBehaviour
 
 		foreach (var hex in hexes)
 		{
-			var hexagonObj = Instantiate(hexagonPref, parentTr);
+			var hexagonObj = Instantiate(hexagonPref, hexagonParentTr);
 			var hexagon = hexagonObj.GetComponent<Hexagon>();
 			hexagon.Init(hex.ToVector3());
 			hexagonsPerCoord.Add(hex, hexagon);
@@ -107,21 +144,20 @@ public class GameManager : MonoBehaviour
 		yield return CheckMatching();
 
 		isTouchable = true;
+		isInitializing = false;
 	}
 
 	private static Shape.eColorType GetRandomColorOfShape()
 	{
-		return (Shape.eColorType)UnityEngine.Random.Range(1, 6);
+		return (Shape.eColorType)Random.Range(1, 6);
 	}
 
 	private IEnumerator CheckMatching()
 	{
 		while(true)
-		{ 
-			var piecesToBomb = CheckMatchingPiecesPerAxis(eAXIS.X);
-			piecesToBomb.UnionWith(CheckMatchingPiecesPerAxis(eAXIS.Y));
-			piecesToBomb.UnionWith(CheckMatchingPiecesPerAxis(eAXIS.Z));
-			if(piecesToBomb.Count <= 0)
+		{
+			var piecesToBomb = GetPiecesToBomb();
+			if (piecesToBomb.Count <= 0)
 			{
 				Debug.Log("CheckMatching is done.");
 				break;
@@ -140,12 +176,21 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
+	private HashSet<Piece> GetPiecesToBomb()
+	{
+		var piecesToBomb = CheckMatchingPiecesPerAxis(eAXIS.X);
+		piecesToBomb.UnionWith(CheckMatchingPiecesPerAxis(eAXIS.Y));
+		piecesToBomb.UnionWith(CheckMatchingPiecesPerAxis(eAXIS.Z));
+		return piecesToBomb;
+	}
+
 	private IEnumerator GoUpside(Piece pieceToBomb)
 	{
-		pieceToBomb.ChangeColor(Shape.eColorType.NONE);
-
 		var piece = pieceToBomb;
+		var prevScale = piece.transform.localScale;
+		piece.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
 		var upsideHex = GetUpsideHex(piece);
+
 		while (piecesPerCoord.ContainsKey(upsideHex))
 		{
 			var upsidePiece = piecesPerCoord[upsideHex];
@@ -154,24 +199,26 @@ public class GameManager : MonoBehaviour
 
 			upsideHex = GetUpsideHex(piece);
 		}
+
+		piece.transform.localScale = prevScale;
 	}
 
 	private IEnumerator Swap(Piece piece, Piece upsidePiece)
 	{
+		explainText.SetText("Swap {0}, {1}", piece.ColorType.ToString(), upsidePiece.ColorType.ToString());
+
 		Debug.LogFormat("Before swap - first {0}, second {1}", piecesPerCoord[piece.Hex].Hex, piecesPerCoord[upsidePiece.Hex].Hex);
 		var tempHex = piece.Hex;
 
 		piece.Swap(upsidePiece);
-		//piece.ChangeTo(upsidePiece);
-		//upsidePiece.ChangeTo(piece);
-		//piece.ChangeLocation(upsidePiece.Hex);
-		//upsidePiece.ChangeLocation(tempHex);
 		yield return Wait();
 
 		piecesPerCoord[upsidePiece.Hex] = upsidePiece;
 		piecesPerCoord[piece.Hex] = piece;
 
 		Debug.LogFormat("After swap - first {0}, second {1}", piecesPerCoord[piece.Hex].Hex, piecesPerCoord[upsidePiece.Hex].Hex);
+
+		explainText.Clear();
 	}
 
 	private HashSet<Piece> CheckMatchingPiecesPerAxis(eAXIS axis)
@@ -205,19 +252,14 @@ public class GameManager : MonoBehaviour
 
 				if (count >= MIN_BOMB_COUNT)
 				{
-					if (count >= MIN_BOMB_COUNT + 1)
+					for (int jj = j - (MIN_BOMB_COUNT-1); jj <= j; jj++)
 					{
-						piecesPerCoord[hex].ChangeShapeTo<Rocket>();
-						count = 1;
+						var kk = -i - jj;
+						piecesToBomb.UnionWith(piecesPerCoord[GetHexPerAxis(axis, i,jj,kk)].BombAndReturnPieces());
+						Score += 20;
 					}
-					else
-					{
-						for (int jj = j - 2; jj <= j; jj++)
-						{
-							var kk = -i - jj;
-							piecesToBomb.UnionWith(piecesPerCoord[GetHexPerAxis(axis, i,jj,kk)].BombAndReturnPieces());
-						}
-					}
+
+					count = 1;
 				}
 
 				prevType = currentType;
@@ -281,8 +323,6 @@ public class GameManager : MonoBehaviour
 	{
 		return piece.Hex.Neighbor(3);
 	}
-
-	private static YieldInstruction waitYielder = new WaitForSeconds(0.1f);
 
 	private static YieldInstruction Wait()
 	{

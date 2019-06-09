@@ -1,9 +1,10 @@
-// Generated code -- CC0 -- No Rights Reserved -- http://www.redblobgames.com/grids/hexagons/
-
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Reference : http://www.redblobgames.com/grids/hexagons/
+/// </summary>
 public struct Hex
 {
 	public Hex(int x, int z, int y) : this()

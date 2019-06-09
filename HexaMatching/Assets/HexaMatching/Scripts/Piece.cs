@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -42,7 +41,6 @@ public class Piece : MonoBehaviour
 
 	public void Swap(Piece piece)
 	{
-		//var colorType = piece.ColorType;
 		var hex = piece.Hex;
 		var shapeType = piece.shape.GetType();
 
@@ -50,14 +48,12 @@ public class Piece : MonoBehaviour
 
 		this.ChangeLocation(hex);
 		this.ChangeShapeTo(shapeType);
-		//this.ChangeColor(ColorType);
 	}
 
 	public void ChangeTo(Piece piece)
 	{
 		ChangeLocation(piece.Hex);
 		ChangeShapeTo(piece.shape.GetType());
-		//ChangeColor(piece.ColorType);
 	}
 
 	public void ChangeShapeTo<T>() where T : Shape
