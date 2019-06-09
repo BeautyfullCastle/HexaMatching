@@ -7,6 +7,10 @@ using UnityEngine;
 /// </summary>
 public struct Hex
 {
+	public readonly int x;
+	public readonly int z;
+	public readonly int y;
+
 	public Hex(int x, int z, int y) : this()
 	{
 		this.x = x;
@@ -18,10 +22,6 @@ public struct Hex
 	public Hex(int x, int z) : this(x, z, -x - z)
 	{
 	}
-
-	public readonly int x;
-	public readonly int z;
-	public readonly int y;
 
 	public Hex Add(Hex b)
 	{
@@ -63,13 +63,6 @@ public struct Hex
 	public Hex Neighbor(int direction)
 	{
 		return Add(Hex.Direction(direction));
-	}
-
-	static public List<Hex> diagonals = new List<Hex> { new Hex(2, -1, -1), new Hex(1, -2, 1), new Hex(-1, -1, 2), new Hex(-2, 1, 1), new Hex(-1, 2, -1), new Hex(1, 1, -2) };
-
-	public Hex DiagonalNeighbor(int direction)
-	{
-		return Add(Hex.diagonals[direction]);
 	}
 
 	public int Length()
