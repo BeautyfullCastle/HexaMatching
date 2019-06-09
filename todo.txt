@@ -1,5 +1,0 @@
-Swap
-- bug : can swap more than 2 indexes different.
-
-Remove 3 or more lined spheres
-
