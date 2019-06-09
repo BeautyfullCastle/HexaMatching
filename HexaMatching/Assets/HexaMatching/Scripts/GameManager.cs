@@ -147,11 +147,6 @@ public class GameManager : MonoBehaviour
 		isInitializing = false;
 	}
 
-	private static Shape.eColorType GetRandomColorOfShape()
-	{
-		return (Shape.eColorType)Random.Range(1, 6);
-	}
-
 	private IEnumerator CheckMatching()
 	{
 		while(true)
@@ -269,22 +264,6 @@ public class GameManager : MonoBehaviour
 		return piecesToBomb;
 	}
 
-	private static Hex GetHexPerAxis(eAXIS axis, int i, int j, int k)
-	{
-		// z aixs
-		var hex = new Hex(i, k, j);
-		if (axis == eAXIS.X)
-		{
-			hex = new Hex(k, i, j);
-		}
-		else if (axis == eAXIS.Y)
-		{
-			hex = new Hex(k, j, i);
-		}
-
-		return hex;
-	}
-
 	private List<GameObject> MakeObjects(GameObject prefab, Transform parent, List<Hex> hexes)
 	{
 		var objs = new List<GameObject>();
@@ -319,9 +298,30 @@ public class GameManager : MonoBehaviour
 		return distance >= 1.5f;
 	}
 
+	private static Hex GetHexPerAxis(eAXIS axis, int i, int j, int k)
+	{
+		// z aixs
+		var hex = new Hex(i, k, j);
+		if (axis == eAXIS.X)
+		{
+			hex = new Hex(k, i, j);
+		}
+		else if (axis == eAXIS.Y)
+		{
+			hex = new Hex(k, j, i);
+		}
+
+		return hex;
+	}
+
 	private static Hex GetUpsideHex(Piece piece)
 	{
 		return piece.Hex.Neighbor(3);
+	}
+
+	private static Shape.eColorType GetRandomColorOfShape()
+	{
+		return (Shape.eColorType)Random.Range(1, 6);
 	}
 
 	private static YieldInstruction Wait()
