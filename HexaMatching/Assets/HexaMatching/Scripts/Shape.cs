@@ -18,10 +18,12 @@ public abstract class Shape : MonoBehaviour
 	public eColorType ColorType { get; protected set; }
 
 	protected Piece piece = null;
+	private Renderer[] renderers = null;
 
 	public void Init(Piece piece, eColorType type)
 	{
 		this.piece = piece;
+		renderers = this.piece.GetComponentsInChildren<Renderer>();
 		ChangeColor(type);
 	}
 
@@ -29,8 +31,10 @@ public abstract class Shape : MonoBehaviour
 	{
 		this.ColorType = colorType;
 
-		var mat = this.piece.GetComponentInChildren<Renderer>().material;
-		mat.color = GetColorOfType(this.ColorType);
+		foreach (var renderer in renderers)
+		{
+			renderer.material.color = GetColorOfType(this.ColorType);
+		}
 	}
 
 	protected Color GetColorOfType(eColorType colorType)

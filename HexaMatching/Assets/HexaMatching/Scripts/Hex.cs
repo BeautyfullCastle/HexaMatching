@@ -14,7 +14,7 @@ public struct Hex
 		if (x + z + y != 0) throw new ArgumentException("x + z + y must be 0");
 	}
 
-	public Hex(int x, int z) : this(x, z, -x-z)
+	public Hex(int x, int z) : this(x, z, -x - z)
 	{
 	}
 
@@ -79,6 +79,11 @@ public struct Hex
 	public int Distance(Hex b)
 	{
 		return Subtract(b).Length();
+	}
+
+	public override string ToString()
+	{
+		return string.Format("{0}, {1}, {2}", x, y, z);
 	}
 
 	public static List<Hex> CubeSpiral(Hex center, int radius)

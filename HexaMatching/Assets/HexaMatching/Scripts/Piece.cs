@@ -8,7 +8,7 @@ public class Piece : MonoBehaviour
 	private Shape[] shapes = null;
 	private Shape shape = null;
 
-	public Shape.eColorType Type { get { return shape.ColorType; } }
+	public Shape.eColorType ColorType { get { return shape.ColorType; } }
 
 	public Hex Hex
 	{
@@ -40,14 +40,35 @@ public class Piece : MonoBehaviour
 		this.transform.localPosition = localPos;
 	}
 
+	public void Swap(Piece piece)
+	{
+		//var colorType = piece.ColorType;
+		var hex = piece.Hex;
+		var shapeType = piece.shape.GetType();
+
+		piece.ChangeTo(this);
+
+		this.ChangeLocation(hex);
+		this.ChangeShapeTo(shapeType);
+		//this.ChangeColor(ColorType);
+	}
+
+	public void ChangeTo(Piece piece)
+	{
+		ChangeLocation(piece.Hex);
+		ChangeShapeTo(piece.shape.GetType());
+		//ChangeColor(piece.ColorType);
+	}
+
 	public void ChangeShapeTo<T>() where T : Shape
 	{
 		foreach (var shape in shapes)
 		{
-			if(shape is T)
+			if (shape is T)
 			{
 				shape.gameObject.SetActive(true);
 				this.shape = shape;
+				this.shape.ChangeColor(shape.ColorType);
 			}
 			else
 			{
@@ -56,9 +77,16 @@ public class Piece : MonoBehaviour
 		}
 	}
 
-	public List<Piece> BombAndReturnPieces()
+	private void ChangeShapeTo(Type shapeType)
 	{
-		return shape.BombAndReturnPieces();
+		if (shapeType == typeof(Sphere))
+		{
+			ChangeShapeTo<Sphere>();
+		}
+		else if (shapeType == typeof(Rocket))
+		{
+			ChangeShapeTo<Rocket>();
+		}
 	}
 
 	public void ChangeLocation(Hex hex)
@@ -69,5 +97,10 @@ public class Piece : MonoBehaviour
 	public void ChangeColor(Shape.eColorType colorType)
 	{
 		this.shape.ChangeColor(colorType);
+	}
+
+	public List<Piece> BombAndReturnPieces()
+	{
+		return shape.BombAndReturnPieces();
 	}
 }
