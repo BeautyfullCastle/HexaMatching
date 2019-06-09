@@ -25,7 +25,7 @@ public abstract class Shape : MonoBehaviour
 		ChangeColor(type);
 	}
 
-	protected void ChangeColor(eColorType colorType)
+	public void ChangeColor(eColorType colorType)
 	{
 		this.ColorType = colorType;
 
@@ -38,16 +38,17 @@ public abstract class Shape : MonoBehaviour
 		switch (colorType)
 		{
 			case eColorType.RED:
-				return Color.red;
+				return new Color(0.78f, 0.08f, 0.08f);
 			case eColorType.ORANGE:
-				return Color.magenta;
+				return new Color(0.9686275f, 0.5960785f, 0.3843138f);
 			case eColorType.YELLOW:
-				return Color.yellow;
+				return new Color(1f, 0.9686275f, 0.5058824f);
 			case eColorType.GREEN:
-				return Color.green;
+				return new Color(0.08f, 0.78f, 0.08f);
 			case eColorType.BLUE:
-				return Color.blue;
+				return new Color(0.08f, 0.08f, 0.78f);
 			case eColorType.NONE:
+				return new Color(0.07450981f, 0.003921569f, 0.003921569f);
 			default:
 				return Color.black;
 		}

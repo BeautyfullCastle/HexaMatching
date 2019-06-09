@@ -66,8 +66,37 @@ public class GameManager : MonoBehaviour
 		piecesToBomb.UnionWith(CheckMatchingPiecesPerAxis(piecesPerCoord, eAXIS.Z));
 		foreach (var pieceToBomb in piecesToBomb)
 		{
-			Destroy(pieceToBomb.gameObject);
+			FlowDown(pieceToBomb, piecesPerCoord);
 		}
+	}
+
+	private void FlowDown(Piece pieceToBomb, Dictionary<Hex, Piece> piecesPerCoord)
+	{
+		pieceToBomb.ChangeColor(Shape.eColorType.NONE);
+
+		var piece = pieceToBomb;
+		var upsideHex = piece.Hex.Neighbor(4);
+		while (piecesPerCoord.ContainsKey(upsideHex))
+		{
+			var upsidePiece = piecesPerCoord[upsideHex];
+
+			Swap(piece, upsidePiece, piecesPerCoord);
+			
+			upsideHex = piece.Hex.Neighbor(4);
+		}
+
+		//piece.gameObject.SetActive(true);
+	}
+
+	private void Swap(Piece piece, Piece upsidePiece, Dictionary<Hex, Piece> piecesPerCoord)
+	{
+		var tempHex = piece.Hex;
+
+		piece.ChangeLocation(upsidePiece.Hex);
+		upsidePiece.ChangeLocation(tempHex);
+
+		piecesPerCoord[upsidePiece.Hex] = upsidePiece;
+		piecesPerCoord[piece.Hex] = piece;
 	}
 
 	private static HashSet<Piece> CheckMatchingPiecesPerAxis(Dictionary<Hex, Piece> piecesPerCoord, eAXIS axis)

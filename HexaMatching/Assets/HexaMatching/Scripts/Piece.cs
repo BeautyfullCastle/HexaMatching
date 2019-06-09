@@ -18,6 +18,10 @@ public class Piece : MonoBehaviour
 				(int)transform.localPosition.z, 
 				(int)transform.localPosition.y);
 		}
+		private set
+		{
+			transform.localPosition = value.ToVector3();
+		}
 	}
 
 	public void Init(Vector3 localPos, Shape.eColorType colorType)
@@ -55,5 +59,15 @@ public class Piece : MonoBehaviour
 	public List<Piece> BombAndReturnPieces()
 	{
 		return shape.BombAndReturnPieces();
+	}
+
+	public void ChangeLocation(Hex hex)
+	{
+		this.Hex = hex;
+	}
+
+	public void ChangeColor(Shape.eColorType colorType)
+	{
+		this.shape.ChangeColor(colorType);
 	}
 }
