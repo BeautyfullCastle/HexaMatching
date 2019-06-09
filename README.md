@@ -1,7 +1,6 @@
 # HexaMatching
 
-< 과제 >
-•	자사 서비스중인 게임인 Toy Party - Hexa blast 게임에서 25레벨을 구현해주시길 바랍니다.
+Toy project of making hexa 3 matching game.
 
 <구현 완료 항목>
 • 드랍 로직 : 새로운 블럭 들이 빈자리를 찾아 위에서 부터 흘러내려 오는 로직
@@ -13,6 +12,6 @@
 	- Editor Version : 2019.1.1f1
 	- Platform : Android
 
-<제출물 Link>
+<Link>
 •	게임 실행 apk 파일
 https://drive.google.com/open?id=1EPEdKP28iZQbXGPeNDSRa8JpV5n_SFvs
