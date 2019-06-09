@@ -15,9 +15,9 @@ public abstract class Shape : MonoBehaviour
 		BLUE
 	}
 
-	protected Piece piece;
-
 	public eColorType ColorType { get; protected set; }
+
+	protected Piece piece = null;
 
 	public void Init(Piece piece, eColorType type)
 	{

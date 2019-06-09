@@ -6,32 +6,66 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
 	[SerializeField]
-	private GameObject hexagonPref;
+	private GameObject hexagonPref = null;
 	[SerializeField]
-	private Transform parentTr;
+	private Transform parentTr = null;
 	[SerializeField]
-	private GameObject piecePref;
+	private GameObject piecePref = null;
 	[SerializeField]
-	private Transform pieceParentTr;
+	private Transform pieceParentTr = null;
+
+	private Transform from = null;
+	private Transform to = null;
 
 	private const int RADIUS = 3;
 	private const int MIN_BOMB_COUNT = 3;
 
-	private void Awake()
+	private IEnumerator Start()
 	{
-		var obj = Instantiate(hexagonPref, parentTr);
-		obj.transform.localPosition = new Vector3();
-
-		foreach (var direction in Hex.directions)
-		{
-			obj = Instantiate(hexagonPref, parentTr);
-			obj.transform.localPosition = direction.ToVector3();
-		}
-
-		Initialize();
+		yield return Initialize();
 	}
 
-	private void Initialize()
+	private void Update()
+	{
+		if (from == null && Input.GetMouseButtonDown(0))
+		{
+			from = GetHitTransform();
+		}
+		else if (from != null && Input.GetMouseButton(0))
+		{
+			if (IsTooFarAway(from, Input.mousePosition))
+			{
+				from = null;
+				return;
+			}
+
+			var hitTr = GetHitTransform();
+			if (hitTr == null || hitTr == from)
+			{
+				return;
+			}
+			to = hitTr;
+			Swap(from, to);
+			from = null;
+			to = null;
+		}
+		else if(from != null && Input.GetMouseButtonUp(0))
+		{
+			from = null;
+			to = null;
+		}
+	}
+
+	private bool IsTooFarAway(Transform from, Vector3 mousePosition)
+	{
+		Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePosition);
+		mouseWorldPos.z = 0;
+		var distance = (mouseWorldPos - from.position).sqrMagnitude;
+		Debug.LogFormat("from: {0}, mousePos: {1}, mag: {2}", from.position, mouseWorldPos, distance);
+		return distance >= 1.5f;
+	}
+
+	private IEnumerator Initialize()
 	{
 		/// map - r : 3
 		var hexes = Hex.CubeSpiral(new Hex(), RADIUS);
@@ -45,18 +79,25 @@ public class GameManager : MonoBehaviour
 			var hexagon = hexagonObj.GetComponent<Hexagon>();
 			hexagon.Init(hex.ToVector3());
 			hexagonsPerCoord.Add(hex, hexagon);
+			yield return Wait();
 
 			var pieceObj = Instantiate(piecePref, pieceParentTr);
 			var piece = pieceObj.GetComponent<Piece>();
 			piecesPerCoord.Add(hex, piece);
 
-			piece.Init(hex.ToVector3(), (Shape.eColorType)UnityEngine.Random.Range(1, 6));
+			piece.Init(hex.ToVector3(), GetRandomColorOfShape());
+			yield return Wait();
 		}
 
-		CheckMatching(piecesPerCoord);
+		yield return CheckMatching(piecesPerCoord);
 	}
 
-	private void CheckMatching(Dictionary<Hex, Piece> piecesPerCoord)
+	private static Shape.eColorType GetRandomColorOfShape()
+	{
+		return (Shape.eColorType)UnityEngine.Random.Range(1, 6);
+	}
+
+	private IEnumerator CheckMatching(Dictionary<Hex, Piece> piecesPerCoord)
 	{
 		// x + y + z = 0
 
@@ -66,34 +107,43 @@ public class GameManager : MonoBehaviour
 		piecesToBomb.UnionWith(CheckMatchingPiecesPerAxis(piecesPerCoord, eAXIS.Z));
 		foreach (var pieceToBomb in piecesToBomb)
 		{
-			FlowDown(pieceToBomb, piecesPerCoord);
+			yield return FlowDown(pieceToBomb, piecesPerCoord);
+
+			yield return Wait();
+			pieceToBomb.ChangeColor(GetRandomColorOfShape());
 		}
 	}
 
-	private void FlowDown(Piece pieceToBomb, Dictionary<Hex, Piece> piecesPerCoord)
+	private IEnumerator FlowDown(Piece pieceToBomb, Dictionary<Hex, Piece> piecesPerCoord)
 	{
 		pieceToBomb.ChangeColor(Shape.eColorType.NONE);
 
 		var piece = pieceToBomb;
-		var upsideHex = piece.Hex.Neighbor(4);
+		var upsideHex = GetUpsideHex(piece);
 		while (piecesPerCoord.ContainsKey(upsideHex))
 		{
 			var upsidePiece = piecesPerCoord[upsideHex];
 
-			Swap(piece, upsidePiece, piecesPerCoord);
-			
-			upsideHex = piece.Hex.Neighbor(4);
+			yield return Swap(piece, upsidePiece, piecesPerCoord);
+
+			upsideHex = GetUpsideHex(piece);
 		}
 
 		//piece.gameObject.SetActive(true);
 	}
 
-	private void Swap(Piece piece, Piece upsidePiece, Dictionary<Hex, Piece> piecesPerCoord)
+	private static Hex GetUpsideHex(Piece piece)
+	{
+		return piece.Hex.Neighbor(3);
+	}
+
+	private IEnumerator Swap(Piece piece, Piece upsidePiece, Dictionary<Hex, Piece> piecesPerCoord)
 	{
 		var tempHex = piece.Hex;
 
 		piece.ChangeLocation(upsidePiece.Hex);
 		upsidePiece.ChangeLocation(tempHex);
+		yield return Wait();
 
 		piecesPerCoord[upsidePiece.Hex] = upsidePiece;
 		piecesPerCoord[piece.Hex] = piece;
@@ -130,7 +180,7 @@ public class GameManager : MonoBehaviour
 
 				if (count >= MIN_BOMB_COUNT)
 				{
-					if (count == MIN_BOMB_COUNT + 1)
+					if (count >= MIN_BOMB_COUNT + 1)
 					{
 						piecesPerCoord[hex].ChangeShapeTo<Rocket>();
 						count = 1;
@@ -181,33 +231,6 @@ public class GameManager : MonoBehaviour
 		return objs;
 	}
 
-	private Transform from;
-	private Transform to;
-
-	private void Update()
-	{
-		if (from == null && Input.GetMouseButtonDown(0))
-		{
-			from = GetHitTransform();
-		}
-		else if (from != null && Input.GetMouseButton(0))
-		{
-			if (from == null)
-			{
-				return;
-			}
-			var hitTr = GetHitTransform();
-			if (hitTr == null || hitTr == from)
-			{
-				return;
-			}
-			to = hitTr;
-			Swap(from, to);
-			from = null;
-			to = null;
-		}
-	}
-
 	private void Swap(Transform from, Transform to)
 	{
 		Vector3 tempPos = from.localPosition;
@@ -225,5 +248,10 @@ public class GameManager : MonoBehaviour
 			return hitInfo.transform;
 		}
 		return null;
+	}
+
+	private static YieldInstruction Wait()
+	{
+		return new WaitForSeconds(Time.deltaTime * 2f);
 	}
 }
