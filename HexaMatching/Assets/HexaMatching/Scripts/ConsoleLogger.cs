@@ -1,10 +1,9 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 
-[InitializeOnLoad]
 public class ConsoleLogger
 {
-	static ConsoleLogger()
+	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+	static void Init()
 	{
 #if !DEBUG_CONSOLE
 		Debug.unityLogger.logEnabled = false;
