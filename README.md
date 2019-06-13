@@ -17,8 +17,3 @@
 * Unity
 	* Editor Version : 2019.1.1f1
 	* Platform : Android
-
-
-## <Link>
-* 게임 실행 apk 파일
-	* https://drive.google.com/open?id=1EPEdKP28iZQbXGPeNDSRa8JpV5n_SFvs
