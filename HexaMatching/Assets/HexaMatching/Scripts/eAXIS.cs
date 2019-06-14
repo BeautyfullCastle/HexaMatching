@@ -1,4 +1,7 @@
-﻿public enum eAXIS
+﻿namespace HexaMatching
 {
-	X, Y, Z
+	public enum eAXIS
+	{
+		X, Y, Z
+	}
 }

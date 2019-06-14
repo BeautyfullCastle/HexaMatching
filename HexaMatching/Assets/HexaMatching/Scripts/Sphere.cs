@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
 
-public class Sphere : Shape
+namespace HexaMatching
 {
-	public override List<Piece> BombAndReturnPieces()
+	public class Sphere : Shape
 	{
-		return new List<Piece>() { this.piece };
+		public override List<Piece> ReturnPiecesToBomb()
+		{
+			return new List<Piece>() { this.piece };
+		}
 	}
 }

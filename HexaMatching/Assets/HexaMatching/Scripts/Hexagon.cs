@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
 
-public class Hexagon : MonoBehaviour
+namespace HexaMatching
 {
-	public void Init(Vector3 localPos)
+	public class Hexagon : MonoBehaviour
 	{
-		this.transform.localPosition = localPos;
+		public void Init(Vector3 localPos)
+		{
+			this.transform.localPosition = localPos;
+		}
 	}
 }

@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
 
-public class Rocket : Shape
+namespace HexaMatching
 {
-	public eAXIS Axis { get; private set; }
-
-	public override List<Piece> BombAndReturnPieces()
+	public class Rocket : Shape
 	{
-		// TODO : implementation.
-		this.piece.ChangeShapeTo<Rocket>();
+		public eAXIS Axis { get; private set; }
 
-		return new List<Piece>();
+		public override List<Piece> ReturnPiecesToBomb()
+		{
+			// TODO : implementation.
+			this.piece.ChangeShapeTo<Rocket>();
+
+			return new List<Piece>();
+		}
 	}
 }

@@ -1,12 +1,15 @@
 ﻿using UnityEngine;
 
-public class ConsoleLogger
+namespace HexaMatching
 {
-	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-	static void Init()
+	public class ConsoleLogger
 	{
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+		static void Init()
+		{
 #if !DEBUG_CONSOLE
-		Debug.unityLogger.logEnabled = false;
+			Debug.unityLogger.logEnabled = false;
 #endif
+		}
 	}
 }
